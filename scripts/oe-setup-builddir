@@ -14,6 +14,8 @@ die() {
 
 [ -n "$BUILDDIR" ] || die "The build directory (BUILDDIR) must be set!"
 
+printf "[DBG] [oe-setup-builddir] BUILDDIR = %s\n" "$BUILDDIR"
+
 if [ "$1" = '--help' ] || [ "$1" = '-h' ]; then
     echo 'Usage: oe-setup-builddir'
     echo ''
@@ -43,18 +45,25 @@ ORG_TEMPLATECONF=$TEMPLATECONF
 # $TEMPLATECONF can point to a directory for the template local.conf & bblayers.conf
 #
 if [ -n "$TEMPLATECONF" ]; then
+    printf "[DBG] [oe-setup-builddir] TEMPLATECONF is defined as %s.\n" "$TEMPLATECONF"
     if [ ! -d "$TEMPLATECONF" ]; then
         # Allow TEMPLATECONF=meta-xyz/conf as a shortcut
         if [ -d "$OEROOT/$TEMPLATECONF" ]; then
             TEMPLATECONF="$OEROOT/$TEMPLATECONF"
+            printf "[DBG] [oe-setup-builddir] TEMPLATECONF was relative. Now assigned as %s.\n" "$TEMPLATECONF"
         fi
         [ -d "$TEMPLATECONF" ] ||
             die "TEMPLATECONF value points to nonexistent directory '$TEMPLATECONF'"
     fi
     templatesdir=$(python3 -c "import sys; print(sys.argv[1].strip('/').split('/')[-2])" "$TEMPLATECONF")
-    if [ "$templatesdir" != templates ] || [ ! -f "$TEMPLATECONF/../../layer.conf" ]; then
-        die "TEMPLATECONF value (which is $TEMPLATECONF) must point to meta-some-layer/conf/templates/template-name"
+    if [ "$templatesdir" != templates ]; then
+        die "TEMPLATECONF value (which is $TEMPLATECONF) must end with 'templates'"
     fi
+
+    if [ ! -f "$TEMPLATECONF/../../layer.conf" ]; then
+        die "TEMPLATECONF value (which is $TEMPLATECONF) does not point to a correct layer."
+    fi
+
     OECORELAYERCONF="$TEMPLATECONF/bblayers.conf.sample"
     OECORELOCALCONF="$TEMPLATECONF/local.conf.sample"
     OECORENOTESCONF="$TEMPLATECONF/conf-notes.txt"
