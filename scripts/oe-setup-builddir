@@ -55,7 +55,7 @@ if [ -n "$TEMPLATECONF" ]; then
         [ -d "$TEMPLATECONF" ] ||
             die "TEMPLATECONF value points to nonexistent directory '$TEMPLATECONF'"
     fi
-    templatesdir=$(python3 -c "import sys; print(sys.argv[1].strip('/').split('/')[-2])" "$TEMPLATECONF")
+    templatesdir=$(python3 -c "import sys; print(sys.argv[1].strip('/').split('/')[-1])" "$TEMPLATECONF")
     if [ "$templatesdir" != templates ]; then
         die "TEMPLATECONF value (which is $TEMPLATECONF) must end with 'templates'"
     fi
